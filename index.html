@@ -6,13 +6,10 @@
 <!-- CodeMirror CSS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
 
-<!-- Themes -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/monokai.min.css">
-
-<!-- CodeMirror Core -->
+<!-- CodeMirror JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
 
-<!-- REQUIRED MODES (VERY IMPORTANT) -->
+<!-- Modes -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
@@ -58,7 +55,6 @@ button{
   gap:10px;
 }
 
-/* Panels */
 .panel{
   flex:1;
   display:flex;
@@ -68,14 +64,12 @@ button{
   background:white;
 }
 
-/* Heading */
 .heading{
   padding:10px;
   font-weight:bold;
   background:#e2e8f0;
 }
 
-/* Editor */
 .editor{
   flex:1;
 }
@@ -99,7 +93,6 @@ button{
   background:#94a3b8;
 }
 </style>
-
 </head>
 
 <body>
@@ -135,9 +128,11 @@ button{
 // INIT EDITOR
 var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
   mode: "htmlmixed",
-  theme: "monokai",
+  theme: "default",   // ✅ WHITE BACKGROUND
   lineNumbers: true,
-  autoCloseTags: true,
+
+  autoCloseTags: true, // basic support
+
   extraKeys: {
     "Ctrl-Space": "autocomplete"
   }
@@ -154,12 +149,34 @@ function runCode(){
   document.getElementById("output").srcdoc = editor.getValue();
 }
 
-// ✅ AUTO SUGGEST FIXED
+// ✅ AUTOCOMPLETE
 editor.on("inputRead", function(cm, change){
   if(change.text[0] === "<"){
-    cm.showHint({
-      completeSingle: false
-    });
+    cm.showHint({completeSingle:false});
+  }
+});
+
+// ✅ PERFECT CURSOR FIX (IMPORTANT)
+editor.on("keyup", function(cm, e){
+  if(e.key === ">"){
+    let cursor = cm.getCursor();
+    let line = cm.getLine(cursor.line);
+
+    let before = line.substring(0, cursor.ch);
+    let match = before.match(/<([a-z0-9]+)>$/i);
+
+    if(match){
+      let tag = match[1];
+
+      let selfClosing = ["img","br","hr","input","meta","link"];
+
+      if(!selfClosing.includes(tag)){
+        cm.replaceRange(`</${tag}>`, cursor);
+
+        // Move cursor BETWEEN tags
+        cm.setCursor({line: cursor.line, ch: cursor.ch});
+      }
+    }
   }
 });
 
