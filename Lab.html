@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>IT Practical Lab – All in One</title>
+
+<style>
+body{
+  font-family:Segoe UI;
+  background:#e0f2fe;
+  padding:15px;
+}
+
+h2{color:#1d4ed8;}
+
+select, textarea{
+  width:100%;
+  padding:10px;
+  font-size:15px;
+  margin-top:10px;
+  border-radius:8px;
+  border:1px solid #94a3b8;
+}
+
+textarea{height:160px;}
+
+button{
+  margin-top:10px;
+  padding:10px 18px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.run{background:#2563eb;color:white;}
+.check{background:#16a34a;color:white;}
+
+iframe{
+  width:100%;
+  height:160px;
+  margin-top:10px;
+  background:white;
+  border:1px solid #ccc;
+}
+
+.box{
+  background:white;
+  padding:12px;
+  border-radius:10px;
+  margin-top:10px;
+}
+
+.correct{color:green;font-weight:bold;}
+.wrong{color:red;font-weight:bold;}
+</style>
+</head>
+
+<body>
+
+<h2>💻 IT Practical Lab (All Practicals)</h2>
+
+<select id="practicalSelect" onchange="loadPractical()">
+  <option value="1">Practical 1: Basic HTML</option>
+  <option value="2">Practical 2: Audio</option>
+  <option value="3">Practical 3: Image</option>
+  <option value="4">Practical 4: Hyperlink</option>
+  <option value="5">Practical 5: Table</option>
+  <option value="6">Practical 6: Form</option>
+  <option value="7">Practical 7: List</option>
+  <option value="8">Practical 8: CSS</option>
+  <option value="9">Practical 9: JavaScript</option>
+  <option value="10">Practical 10: Validation</option>
+  <option value="11">Practical 11: Webpage</option>
+  <option value="12">Practical 12: Mini Project</option>
+</select>
+
+<div class="box">
+<p id="question"></p>
+</div>
+
+<textarea id="code"></textarea>
+
+<br>
+<button class="run" onclick="runCode()">▶ Run</button>
+<button class="check" onclick="checkCode()">✔ Check</button>
+
+<iframe id="output"></iframe>
+
+<div class="box">
+<p id="result"></p>
+</div>
+
+<script>
+
+const practicals = {
+
+1:{
+q:"Create a webpage with heading and paragraph",
+code:`<h1>My First Page</h1>
+<p>Welcome to IT</p>`,
+check:(c)=>c.includes("<h1>") && c.includes("<p>")
+},
+
+2:{
+q:"Add audio with controls",
+code:`<audio controls>
+<source src="audio.mp3">
+</audio>`,
+check:(c)=>c.includes("<audio") && c.includes("controls")
+},
+
+3:{
+q:"Insert image",
+code:`<img src="image.jpg" width="200">`,
+check:(c)=>c.includes("<img")
+},
+
+4:{
+q:"Create hyperlink",
+code:`<a href="https://google.com">Visit</a>`,
+check:(c)=>c.includes("<a")
+},
+
+5:{
+q:"Create table",
+code:`<table border="1">
+<tr><td>A</td></tr>
+</table>`,
+check:(c)=>c.includes("<table")
+},
+
+6:{
+q:"Create form",
+code:`<form>
+Name: <input type="text">
+</form>`,
+check:(c)=>c.includes("<form")
+},
+
+7:{
+q:"Create list",
+code:`<ul>
+<li>Item</li>
+</ul>`,
+check:(c)=>c.includes("<ul") || c.includes("<ol")
+},
+
+8:{
+q:"Apply CSS",
+code:`<style>
+h1{color:red;}
+</style>
+<h1>Hello</h1>`,
+check:(c)=>c.includes("<style")
+},
+
+9:{
+q:"JavaScript alert",
+code:`<button onclick="alert('Hi')">Click</button>`,
+check:(c)=>c.includes("alert(")
+},
+
+10:{
+q:"Input validation",
+code:`<input type="text" required>`,
+check:(c)=>c.includes("required")
+},
+
+11:{
+q:"Basic webpage structure",
+code:`<html>
+<body>
+<h1>Hello</h1>
+</body>
+</html>`,
+check:(c)=>c.includes("<html") && c.includes("<body")
+},
+
+12:{
+q:"Mini project",
+code:`<h1>My Website</h1>
+<p>Content here</p>`,
+check:(c)=>c.length>50
+}
+
+};
+
+function loadPractical(){
+  let p = practicals[document.getElementById("practicalSelect").value];
+  document.getElementById("question").innerHTML=p.q;
+  document.getElementById("code").value=p.code;
+  document.getElementById("result").innerHTML="";
+}
+
+function runCode(){
+  let code=document.getElementById("code").value;
+  document.getElementById("output").srcdoc=code;
+}
+
+function checkCode(){
+  let code=document.getElementById("code").value.toLowerCase();
+  let p = practicals[document.getElementById("practicalSelect").value];
+
+  if(p.check(code)){
+    document.getElementById("result").innerHTML="<span class='correct'>✔ Correct!</span>";
+  } else {
+    document.getElementById("result").innerHTML="<span class='wrong'>❌ Check your code</span>";
+  }
+}
+
+// Load first practical
+loadPractical();
+
+</script>
+
+</body>
+</html>
