@@ -1,97 +1,71 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Smart HTML Editor</title>
+<title>HTML Live Editor</title>
+
+<!-- CodeMirror CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+
+<!-- CodeMirror JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
+
+<!-- ✅ Auto close tag addon -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/edit/closetag.min.js"></script>
 
 <style>
 body{
-  font-family:Segoe UI;
   margin:0;
-  background:linear-gradient(135deg,#2563eb,#06b6d4);
+  font-family:Segoe UI;
+  background:#0f172a;
   color:white;
 }
 
-.container{
-  max-width:1100px;
-  margin:auto;
-  padding:20px;
+body.light{
+  background:#f1f5f9;
+  color:#111;
 }
 
-h2{text-align:center;}
+.container{
+  display:flex;
+  height:100vh;
+}
+
+.topbar{
+  position:fixed;
+  top:10px;
+  right:20px;
+  z-index:10;
+}
+
+button{
+  margin:5px;
+  padding:8px 15px;
+  border:none;
+  border-radius:20px;
+  cursor:pointer;
+  font-weight:bold;
+  background:#facc15;
+}
 
 .editor{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:20px;
+  width:50%;
 }
 
-.box{
-  background:white;
-  color:#111;
-  border-radius:15px;
-  padding:10px;
-  display:flex;
-}
-
-/* Line numbers */
-.line-numbers{
-  background:#f1f5f9;
-  padding:10px;
-  text-align:right;
-  font-family:monospace;
-  user-select:none;
-}
-
-textarea{
-  width:100%;
-  height:320px;
-  border:none;
-  outline:none;
-  font-family:monospace;
+.CodeMirror{
+  height:100%;
   font-size:15px;
-  padding-left:10px;
-  resize:none;
+}
+
+.output{
+  width:50%;
+  background:white;
 }
 
 iframe{
   width:100%;
-  height:340px;
+  height:100%;
   border:none;
-}
-
-.feedback{
-  margin-top:10px;
-}
-
-.error{
-  color:red;
-  font-weight:bold;
-}
-
-.highlight{
-  background:yellow;
-}
-
-/* Buttons */
-.topbar{
-  text-align:center;
-  margin-bottom:10px;
-}
-
-button{
-  padding:10px 20px;
-  border:none;
-  border-radius:25px;
-  font-weight:bold;
-  margin:5px;
-  cursor:pointer;
-}
-
-.run{background:#facc15;}
-.fix{background:#22c55e;color:white;}
-
-@media(max-width:700px){
-  .editor{grid-template-columns:1fr;}
 }
 </style>
 
@@ -99,135 +73,62 @@ button{
 
 <body>
 
+<div class="topbar">
+<button onclick="toggleMode()">🌙 Mode</button>
+<button onclick="downloadCode()">⬇ Download</button>
+</div>
+
 <div class="container">
 
-<h2>💻 Smart HTML Editor</h2>
-
-<div class="topbar">
-<button class="run" onclick="runCode()">▶ Run</button>
-<button class="fix" onclick="fixError()">🛠 Fix Error</button>
-</div>
-
 <div class="editor">
-
-<div>
-<div class="box">
-<div class="line-numbers" id="lines"></div>
 <textarea id="code"></textarea>
 </div>
-<div class="feedback" id="feedback"></div>
-</div>
 
-<div class="box">
+<div class="output">
 <iframe id="output"></iframe>
-</div>
-
 </div>
 
 </div>
 
 <script>
 
-let codeBox = document.getElementById("code");
-
-// Default code
-codeBox.value = `<h1>Hello</h1>
-<p>Welcome</p>`;
-
-// Update line numbers
-function updateLines(){
-  let lines = codeBox.value.split("\n").length;
-  let lineHTML = "";
-  for(let i=1;i<=lines;i++){
-    lineHTML += i + "<br>";
-  }
-  document.getElementById("lines").innerHTML = lineHTML;
-}
-
-// Scroll sync
-codeBox.addEventListener("scroll", () => {
-  document.getElementById("lines").scrollTop = codeBox.scrollTop;
+// Initialize CodeMirror
+var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+  mode: "xml",
+  theme: "default",
+  lineNumbers: true,
+  autoCloseTags: true   // ✅ activates your script
 });
 
-codeBox.addEventListener("input", () => {
-  updateLines();
+// Default code
+editor.setValue(`<h1>Hello Sagar</h1>
+<p>Welcome to Live Editor</p>`);
+
+// Live preview
+editor.on("change", function(){
   runCode();
 });
 
 function runCode(){
-  let code = codeBox.value;
-  document.getElementById("output").srcdoc = code;
-  validate(code);
+  document.getElementById("output").srcdoc = editor.getValue();
 }
 
-let lastErrorLine = -1;
-
-function validate(code){
-  let errors = [];
-  let lines = code.split("\n");
-  lastErrorLine = -1;
-
-  lines.forEach((line, index) => {
-    let l = line.toLowerCase();
-
-    if(l.includes("<h1>") && !l.includes("</h1>")){
-      errors.push("Line " + (index+1) + ": Missing </h1>");
-      lastErrorLine = index;
-    }
-
-    if(l.includes("<p>") && !l.includes("</p>")){
-      errors.push("Line " + (index+1) + ": Missing </p>");
-      lastErrorLine = index;
-    }
-
-    if(l.includes("</h2>")){
-      errors.push("Line " + (index+1) + ": Wrong tag </h2>");
-      lastErrorLine = index;
-    }
-  });
-
-  let msg = "";
-
-  if(errors.length === 0){
-    msg = "<span style='color:green;font-weight:bold;'>✔ Perfect Code</span>";
-  } else {
-    msg = "<span class='error'>❌ Errors:</span><br>" + errors.join("<br>");
-    scrollToError();
-  }
-
-  document.getElementById("feedback").innerHTML = msg;
+// Dark mode toggle
+function toggleMode(){
+  document.body.classList.toggle("light");
 }
 
-// Scroll to error
-function scrollToError(){
-  if(lastErrorLine === -1) return;
-
-  let lineHeight = 20;
-  codeBox.scrollTop = lastErrorLine * lineHeight;
+// Download code
+function downloadCode(){
+  let code = editor.getValue();
+  let blob = new Blob([code], {type:"text/html"});
+  let a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "code.html";
+  a.click();
 }
 
-// Auto fix
-function fixError(){
-  let code = codeBox.value;
-
-  code = code.replace("</h2>", "</h1>");
-
-  if(code.includes("<h1>") && !code.includes("</h1>")){
-    code += "\n</h1>";
-  }
-
-  if(code.includes("<p>") && !code.includes("</p>")){
-    code += "\n</p>";
-  }
-
-  codeBox.value = code;
-
-  updateLines();
-  runCode();
-}
-
-// Init
-updateLines();
+// Initial run
 runCode();
 
 </script>
