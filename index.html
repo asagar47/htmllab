@@ -3,21 +3,27 @@
 <head>
 <title>HTML Live Editor</title>
 
-<!-- CodeMirror -->
+<!-- CodeMirror CSS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+
+<!-- Themes -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/monokai.min.css">
+
+<!-- CodeMirror Core -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
 
-<!-- Modes -->
+<!-- REQUIRED MODES (VERY IMPORTANT) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
 
 <!-- Addons -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/edit/closetag.min.js"></script>
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/hint/show-hint.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/hint/show-hint.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/hint/html-hint.min.js"></script>
-
-<!-- Theme -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/monokai.min.css">
 
 <style>
 body{
@@ -26,20 +32,17 @@ body{
   background:#f1f5f9;
 }
 
-/* Wrapper for margin */
 .wrapper{
   margin:20px;
   height:90vh;
 }
 
-/* Topbar */
 .topbar{
   text-align:right;
   margin-bottom:10px;
 }
 
-button, select{
-  margin:5px;
+button{
   padding:8px 15px;
   border:none;
   border-radius:20px;
@@ -63,10 +66,9 @@ button, select{
   border-radius:10px;
   overflow:hidden;
   background:white;
-  box-shadow:0 5px 15px rgba(0,0,0,0.1);
 }
 
-/* Headings */
+/* Heading */
 .heading{
   padding:10px;
   font-weight:bold;
@@ -97,6 +99,7 @@ button, select{
   background:#94a3b8;
 }
 </style>
+
 </head>
 
 <body>
@@ -105,16 +108,10 @@ button, select{
 
 <div class="topbar">
 <button onclick="downloadCode()">⬇ Download</button>
-
-<select onchange="changeTheme(this.value)">
-<option value="default">Default</option>
-<option value="monokai">Monokai</option>
-</select>
 </div>
 
 <div class="container">
 
-<!-- LEFT -->
 <div class="panel" id="leftPanel">
 <div class="heading">💻 HTML Code</div>
 <textarea id="code"></textarea>
@@ -122,7 +119,6 @@ button, select{
 
 <div class="resizer" id="drag"></div>
 
-<!-- RIGHT -->
 <div class="panel" id="rightPanel">
 <div class="heading">📺 Output</div>
 <div class="output">
@@ -139,10 +135,12 @@ button, select{
 // INIT EDITOR
 var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
   mode: "htmlmixed",
+  theme: "monokai",
   lineNumbers: true,
   autoCloseTags: true,
-  theme: "default",
-  extraKeys: {"Ctrl-Space": "autocomplete"}
+  extraKeys: {
+    "Ctrl-Space": "autocomplete"
+  }
 });
 
 // DEFAULT CODE
@@ -156,17 +154,14 @@ function runCode(){
   document.getElementById("output").srcdoc = editor.getValue();
 }
 
-// AUTO SUGGEST
+// ✅ AUTO SUGGEST FIXED
 editor.on("inputRead", function(cm, change){
   if(change.text[0] === "<"){
-    cm.showHint({completeSingle:false});
+    cm.showHint({
+      completeSingle: false
+    });
   }
 });
-
-// THEME SWITCH
-function changeTheme(theme){
-  editor.setOption("theme", theme);
-}
 
 // DOWNLOAD
 function downloadCode(){
