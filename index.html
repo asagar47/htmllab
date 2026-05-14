@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>HTML Live Editor</title>
+<title>Smart HTML Editor</title>
 
 <style>
 body{
@@ -9,11 +9,6 @@ body{
   margin:0;
   background:linear-gradient(135deg,#2563eb,#06b6d4);
   color:white;
-  transition:0.3s;
-}
-
-body.dark{
-  background:#020617;
 }
 
 .container{
@@ -24,27 +19,6 @@ body.dark{
 
 h2{text-align:center;}
 
-.topbar{
-  display:flex;
-  justify-content:center;
-  gap:10px;
-  flex-wrap:wrap;
-  margin-bottom:10px;
-}
-
-button{
-  padding:10px 18px;
-  border:none;
-  border-radius:25px;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-.run{background:#facc15;color:#111;}
-.copy{background:#22c55e;color:white;}
-.save{background:#3b82f6;color:white;}
-.toggle{background:#111;color:white;}
-
 .editor{
   display:grid;
   grid-template-columns:1fr 1fr;
@@ -53,29 +27,60 @@ button{
 
 .box{
   background:white;
-  color:#111827;
+  color:#111;
   border-radius:15px;
   padding:15px;
-  box-shadow:0 10px 25px rgba(0,0,0,0.2);
+  position:relative;
 }
 
 textarea{
   width:100%;
-  height:320px;
-  border:none;
-  outline:none;
+  height:300px;
   font-family:monospace;
   font-size:15px;
+  border:none;
+  outline:none;
+  line-height:1.5;
 }
 
 iframe{
   width:100%;
-  height:320px;
+  height:300px;
   border:none;
-  background:white;
 }
 
-.label{font-weight:bold;margin-bottom:8px;}
+.feedback{
+  margin-top:10px;
+}
+
+.error{
+  color:red;
+  font-weight:bold;
+}
+
+.suggestion{
+  color:#f59e0b;
+}
+
+.correct{
+  color:green;
+}
+
+.score{
+  font-size:18px;
+  font-weight:bold;
+  margin-top:10px;
+}
+
+/* Highlight line */
+.highlight-line{
+  position:absolute;
+  left:0;
+  right:0;
+  height:24px;
+  background:rgba(255,0,0,0.15);
+  pointer-events:none;
+}
 
 @media(max-width:700px){
   .editor{grid-template-columns:1fr;}
@@ -88,24 +93,25 @@ iframe{
 
 <div class="container">
 
-<h2>💻 HTML Live Code Editor</h2>
-
-<div class="topbar">
-<button class="run" onclick="runCode()">▶ Run</button>
-<button class="copy" onclick="copyCode()">📋 Copy</button>
-<button class="save" onclick="saveCode()">💾 Save</button>
-<button class="toggle" onclick="toggleMode()">🌙 Mode</button>
-</div>
+<h2>💻 Smart HTML Editor</h2>
 
 <div class="editor">
 
 <div class="box">
-<div class="label">📝 Write Code</div>
-<textarea id="code"></textarea>
+
+<textarea id="code">
+<h1>Hello</h1>
+<p>Welcome</p>
+</textarea>
+
+<div id="highlight" class="highlight-line" style="display:none;"></div>
+
+<div class="feedback" id="feedback"></div>
+<div class="score" id="score"></div>
+
 </div>
 
 <div class="box">
-<div class="label">📺 Output</div>
 <iframe id="output"></iframe>
 </div>
 
@@ -115,40 +121,79 @@ iframe{
 
 <script>
 
-// Load saved or default code
-let defaultCode = `<h1>Hello Students</h1>
-<p>Welcome to your live editor</p>`;
+let codeBox = document.getElementById("code");
 
-document.getElementById("code").value =
-localStorage.getItem("savedCode") || defaultCode;
-
-// Auto run on load
-runCode();
-
-// Auto-run while typing
-document.getElementById("code").addEventListener("input", runCode);
+codeBox.addEventListener("input", runCode);
 
 function runCode(){
-  let code = document.getElementById("code").value;
+  let code = codeBox.value;
   document.getElementById("output").srcdoc = code;
+
+  validate(code);
 }
 
-function copyCode(){
-  let code = document.getElementById("code");
-  code.select();
-  document.execCommand("copy");
-  alert("Code copied!");
+function validate(code){
+  let msg = "";
+  let score = 10;
+  let errorLine = -1;
+
+  let lines = code.split("\n");
+
+  // Check each line
+  lines.forEach((line, index) => {
+
+    if(line.includes("<h1>") && !line.includes("</h1>")){
+      msg += "<div class='error'>❌ Line "+(index+1)+": Missing </h1></div>";
+      score -= 2;
+      errorLine = index;
+    }
+
+    if(line.includes("<p>") && !line.includes("</p>")){
+      msg += "<div class='error'>❌ Line "+(index+1)+": Missing </p></div>";
+      score -= 2;
+      errorLine = index;
+    }
+
+    if(line.includes("</h2>")){
+      msg += "<div class='suggestion'>⚠️ Line "+(index+1)+": Replace </h2> with </h1></div>";
+      score -= 1;
+      errorLine = index;
+    }
+
+  });
+
+  // Exam validation
+  if(code.includes("<h1>") && code.includes("<p>")){
+    msg += "<div class='correct'>✔ Good: Heading + Paragraph present</div>";
+  } else {
+    msg += "<div class='error'>❌ Add both heading and paragraph</div>";
+    score -= 2;
+  }
+
+  if(score < 0) score = 0;
+
+  document.getElementById("feedback").innerHTML = msg;
+  document.getElementById("score").innerHTML = "🎯 Score: " + score + "/10";
+
+  highlightError(errorLine);
 }
 
-function saveCode(){
-  let code = document.getElementById("code").value;
-  localStorage.setItem("savedCode", code);
-  alert("Code saved!");
+// Highlight error line visually
+function highlightError(lineIndex){
+  let highlight = document.getElementById("highlight");
+
+  if(lineIndex === -1){
+    highlight.style.display = "none";
+    return;
+  }
+
+  let lineHeight = 24;
+  highlight.style.top = (lineIndex * lineHeight + 10) + "px";
+  highlight.style.display = "block";
 }
 
-function toggleMode(){
-  document.body.classList.toggle("dark");
-}
+// initial run
+runCode();
 
 </script>
 
