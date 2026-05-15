@@ -1,208 +1,100 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>HTML Live Editor</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- CodeMirror CSS -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
-
-<!-- CodeMirror JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
-
-<!-- Modes -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
-
-<!-- Autocomplete -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/hint/show-hint.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/hint/show-hint.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/hint/html-hint.min.js"></script>
+<title>Full Height Output</title>
 
 <style>
-body{
-  margin:0;
-  font-family:Segoe UI;
-  background:#f1f5f9;
+
+/* ===== RESET ===== */
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
 }
 
-.wrapper{
-  margin:20px;
-  height:90vh;
+/* ===== FULL PAGE HEIGHT ===== */
+html,body{
+    width:100%;
+    height:100%;
+    font-family:Arial, sans-serif;
 }
 
-.topbar{
-  text-align:right;
-  margin-bottom:10px;
-}
-
-button{
-  padding:8px 15px;
-  border:none;
-  border-radius:20px;
-  cursor:pointer;
-  font-weight:bold;
-  background:#facc15;
-}
-
-/* Layout */
+/* ===== MAIN CONTAINER ===== */
 .container{
-  display:flex;
-  height:calc(100% - 50px);
-  gap:10px;
+    width:100%;
+    height:100vh;          /* Full screen height */
+    overflow-y:auto;       /* Scroll only when needed */
+    padding:20px;
+    background:#f5f5f5;
 }
 
-.panel{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  border-radius:10px;
-  overflow:hidden;
-  background:white;
+/* ===== CONTENT STYLE ===== */
+h1{
+    font-size:48px;
+    margin-bottom:20px;
 }
 
-.heading{
-  padding:10px;
-  font-weight:bold;
-  background:#e2e8f0;
+h2{
+    font-size:38px;
+    margin-bottom:20px;
 }
 
-.editor{
-  flex:1;
+h3{
+    font-size:30px;
+    margin-bottom:20px;
 }
 
-.CodeMirror{
-  height:100%;
-  font-size:15px;
+p{
+    font-size:20px;
+    line-height:1.7;
+    margin-bottom:20px;
 }
 
-/* Output */
-.output iframe{
-  width:100%;
-  height:100%;
-  border:none;
+.box{
+    height:300px;
+    background:white;
+    border-radius:10px;
+    padding:20px;
+    margin-bottom:20px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.1);
 }
 
-/* Resizer */
-.resizer{
-  width:6px;
-  cursor:col-resize;
-  background:#94a3b8;
-}
 </style>
-
 </head>
 
 <body>
 
-<div class="wrapper">
-
-<div class="topbar">
-<button onclick="downloadCode()">⬇ Download</button>
-</div>
-
 <div class="container">
 
-<div class="panel" id="leftPanel">
-<div class="heading">💻 HTML Code</div>
-<textarea id="code"></textarea>
+    <h1>heading</h1>
+
+    <h2>Heading</h2>
+
+    <h3>heading</h3>
+
+    <div class="box">
+        <p>
+            This content now uses the full height of the screen.
+            Scroll will appear only when content becomes larger than screen height.
+        </p>
+    </div>
+
+    <div class="box">
+        <p>More content here...</p>
+    </div>
+
+    <div class="box">
+        <p>Another section...</p>
+    </div>
+
+    <div class="box">
+        <p>Full viewport height working properly.</p>
+    </div>
+
 </div>
-
-<div class="resizer" id="drag"></div>
-
-<div class="panel" id="rightPanel">
-<div class="heading">📺 Output</div>
-<div class="output">
-<iframe id="output"></iframe>
-</div>
-</div>
-
-</div>
-
-</div>
-
-<script>
-
-// INIT EDITOR
-var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-  mode: "htmlmixed",
-  theme: "default",
-  lineNumbers: true,
-  extraKeys: {
-    "Ctrl-Space": "autocomplete"
-  }
-});
-
-// DEFAULT CODE
-editor.setValue(`<h1>Hello Sagar</h1>
-<p>Welcome to Live Editor</p>`);
-
-// LIVE PREVIEW
-editor.on("change", runCode);
-
-function runCode(){
-  document.getElementById("output").srcdoc = editor.getValue();
-}
-
-// AUTOCOMPLETE DROPDOWN
-editor.on("inputRead", function(cm, change){
-  if(change.text[0] === "<"){
-    cm.showHint({completeSingle:false});
-  }
-});
-
-// ✅ PERFECT TAG CONTROL (FINAL FIX)
-editor.on("keyup", function(cm, e){
-  if(e.key === ">"){
-    let cursor = cm.getCursor();
-    let line = cm.getLine(cursor.line);
-
-    let before = line.substring(0, cursor.ch);
-    let match = before.match(/<([a-z0-9]+)>$/i);
-
-    if(match){
-      let tag = match[1];
-
-      let selfClosing = ["img","br","hr","input","meta","link"];
-
-      if(!selfClosing.includes(tag)){
-        cm.replaceRange(`</${tag}>`, cursor);
-        cm.setCursor({line: cursor.line, ch: cursor.ch});
-      }
-    }
-  }
-});
-
-// DOWNLOAD
-function downloadCode(){
-  let blob = new Blob([editor.getValue()], {type:"text/html"});
-  let a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "code.html";
-  a.click();
-}
-
-// RESIZER
-let drag = document.getElementById("drag");
-let left = document.getElementById("leftPanel");
-let right = document.getElementById("rightPanel");
-
-drag.onmousedown = function(){
-  document.onmousemove = function(e){
-    let percent = (e.clientX / window.innerWidth) * 100;
-    left.style.flex = "0 0 " + percent + "%";
-    right.style.flex = "0 0 " + (100 - percent) + "%";
-  }
-  document.onmouseup = function(){
-    document.onmousemove = null;
-  }
-}
-
-// INIT
-runCode();
-
-</script>
 
 </body>
 </html>
